@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"name": "spresense",
+			"path": "../../spresense"
+		},
+		{
+			"name": "myproject3",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"spresense.sdk.path": "/Users/potagashi/Documents/MACS/spresense_workspace/spresense",
+		"spresense.sdk.tools.path": "/Users/potagashi/Documents/MACS/spresense_workspace/spresense/sdk/tools",
+		"terminal.integrated.env.osx": {
+			"PATH": "/Users/potagashi/spresenseenv/usr/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin:/Library/Apple/usr/bin:/Users/potagashi/spresenseenv/usr/bin:/Users/potagashi/.pyenv/shims:/Users/potagashi/.pyenv/bin:/Users/potagashi/opt/anaconda3/bin:/Users/potagashi/opt/anaconda3/condabin"
+		},
+		"spresense.env.toolchain.path": "/Users/potagashi/spresenseenv/usr/bin",
+		"cortex-debug.armToolchainPath": "/Users/potagashi/spresenseenv/usr/bin",
+		"cortex-debug.openocdPath": "/Users/potagashi/spresenseenv/usr/bin/openocd",
+		"files.associations": {
+			"*.tcc": "c",
+			"fstream": "c",
+			"cerrno": "c"
+		}
+	}
+}
