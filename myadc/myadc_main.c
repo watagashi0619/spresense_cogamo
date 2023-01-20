@@ -96,7 +96,7 @@ static int read_and_print(int fd) {
     if(posdat.receiver.pos_fixmode != CXD56_GNSS_PVT_POSFIX_INVALID) {
         /* 2D fix or 3D fix.
          * Convert latitude and longitude into dmf format and print it. */
-
+        /*
         posfixflag = 1;
 
         double_to_dmf(posdat.receiver.latitude, &dmf);
@@ -104,6 +104,7 @@ static int read_and_print(int fd) {
 
         double_to_dmf(posdat.receiver.longitude, &dmf);
         printf(">LNG %d.%d.%04ld\n", dmf.degree, dmf.minute, dmf.frac);
+        */
     } else {
         /* No measurement. */
 
@@ -270,7 +271,7 @@ int main(int argc, FAR char *argv[]) {
     ret = sigwaitinfo(&mask, NULL);
     printf("sigtimedwait %d, %d\n", ret, errno);
     ret = read(fd_gnss, &posdat, sizeof(posdat));
-    printf(">%d, %d/%d/%d Hour:%d, minute:%d, sec:%d, usec:%ld\n", temp - 20000, posdat.receiver.date.year, posdat.receiver.date.month, posdat.receiver.date.day, posdat.receiver.time.hour, posdat.receiver.time.minute, posdat.receiver.time.sec, posdat.receiver.time.usec);
+    // printf(">%d, %d/%d/%d Hour:%d, minute:%d, sec:%d, usec:%ld\n", temp - 20000, posdat.receiver.date.year, posdat.receiver.date.month, posdat.receiver.date.day, posdat.receiver.time.hour, posdat.receiver.time.minute, posdat.receiver.time.sec, posdat.receiver.time.usec);
 
     tm.tm_year = posdat.receiver.date.year - 1900;
     tm.tm_mon = posdat.receiver.date.month - 1;
@@ -281,7 +282,7 @@ int main(int argc, FAR char *argv[]) {
     ts.tv_nsec = (int)(posdat.receiver.time.usec) * 1000;
     ts.tv_sec = mktime(&tm);
     clock_settime(CLOCK_REALTIME, &ts);  // tsにset
-    printf("%d/%02d/%02d %02d:%02d:%02d.%09ld,%ld\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec, ts.tv_sec);
+    // printf("%d/%02d/%02d %02d:%02d:%02d.%09ld,%ld\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec, ts.tv_sec);
 
     for(;;) {
         fd_csv = fopen(csvfname, "a+");  // とりあえずひたすら追記する設定
@@ -337,15 +338,15 @@ int main(int argc, FAR char *argv[]) {
             ret = read(fd_gnss, &posdat, sizeof(posdat));
             printf(">%d, %d/%d/%d Hour:%d, minute:%d, sec:%d, usec:%ld\n", temp - 20000, posdat.receiver.date.year, posdat.receiver.date.month, posdat.receiver.date.day, posdat.receiver.time.hour, posdat.receiver.time.minute, posdat.receiver.time.sec, posdat.receiver.time.usec);
 
-            // clock_gettime(CLOCK_REALTIME, &ts);  // tsをget
-            // localtime_r(&ts.tv_sec, &tm);        // tsをtmに格納（nsがほしい）
+            clock_gettime(CLOCK_REALTIME, &ts);  // tsをget
+            localtime_r(&ts.tv_sec, &tm);        // tsをtmに格納（nsがほしい）
 
             time_diff = (tm.tm_sec * 1000 + (ts.tv_nsec) / 1000000) % 60000 - (posdat.receiver.time.sec * 1000 + posdat.receiver.time.usec / 1000) % 60000;
             if((time_diff >= 60000 || time_diff <= -60000) || ((int)(posdat.receiver.date.year) - 1900 > tm.tm_year)) {  // 秒数差が1以上と年に差がでたら修正
                 // tsをget
-                clock_gettime(CLOCK_REALTIME, &ts);
+                // clock_gettime(CLOCK_REALTIME, &ts);
                 // tsをtmに格納（nsだけがほしい）
-                localtime_r(&ts.tv_sec, &tm);
+                // localtime_r(&ts.tv_sec, &tm);
                 // GPSのほうからtmにデータ格納
                 tm.tm_year = posdat.receiver.date.year - 1900;
                 tm.tm_mon = posdat.receiver.date.month - 1;
@@ -357,7 +358,7 @@ int main(int argc, FAR char *argv[]) {
                 clock_settime(CLOCK_REALTIME, &ts);  // tsにset
             }
 
-            printf("%d/%02d/%02d %02d:%02d:%02d.%09ld,%ld\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec, ts.tv_sec);
+            // printf("%d/%02d/%02d %02d:%02d:%02d.%09ld,%ld\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec, ts.tv_sec);
 
             if(posdat.receiver.pos_fixmode != CXD56_GNSS_PVT_POSFIX_INVALID) {
                 /* 2D fix or 3D fix.
@@ -390,7 +391,7 @@ int main(int argc, FAR char *argv[]) {
             if(start >= end) {  // endにいくまで配列の値を読み続ける
                 break;
             }
-            if(diff > 500 && sample < 0) {
+            if(diff > 500 || sample > -25000) {
                 // if(sample > -25000) {
                 kiroku = counter;
                 flag = true;
@@ -401,7 +402,7 @@ int main(int argc, FAR char *argv[]) {
                 time_t tv_sec_jst = ts.tv_sec + TIMEZONE_JST;
                 clock_gettime(CLOCK_REALTIME, &ts);
                 localtime_r(&tv_sec_jst, &tm_jst);
-                // printf("%d/%02d/%02d %02d:%02d:%02d.%06ld\n", tm_jst.tm_year + 1900, tm_jst.tm_mon + 1, tm_jst.tm_mday, tm_jst.tm_hour, tm_jst.tm_min, tm_jst.tm_sec, ts.tv_nsec / 1000);
+                printf("%d/%02d/%02d %02d:%02d:%02d.%06ld\n", tm_jst.tm_year + 1900, tm_jst.tm_mon + 1, tm_jst.tm_mday, tm_jst.tm_hour, tm_jst.tm_min, tm_jst.tm_sec, ts.tv_nsec / 1000);
                 //  YMDhms,microsec
                 fprintf(fd_csv, "%d,%d,%d,%d,%d,%d,%d", tm_jst.tm_year + 1900, tm_jst.tm_mon + 1, tm_jst.tm_mday, tm_jst.tm_hour, tm_jst.tm_min, tm_jst.tm_sec, ts.tv_nsec / 1000);
                 for(int i = 0; i < plot_center * 2; i++) {
