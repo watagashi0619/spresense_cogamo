@@ -260,6 +260,7 @@ int main(int argc, FAR char *argv[]) {
     int counter = 0;
     int kiroku = 0;
     int diff = 0;
+    int diff10 = 0;
     bool flag = false;
     int16_t sample;
     int plot_center = 40;
@@ -283,6 +284,28 @@ int main(int argc, FAR char *argv[]) {
     ts.tv_sec = mktime(&tm);
     clock_settime(CLOCK_REALTIME, &ts);  // tsにset
     // printf("%d/%02d/%02d %02d:%02d:%02d.%09ld,%ld\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec, ts.tv_sec);
+
+    ssize_t nbytes_p = read(fd, buftop, BUFSIZE);
+    if(nbytes_p < 0) {
+        errval = errno;
+        printf("read failed:%d\n", errval);
+        return;
+    }
+    char *start_p = buftop;
+    char *end_p = buftop + BUFSIZE;
+    for(;;) {
+        sample = (int16_t)(*(uint16_t *)(start_p));  // sampleされた電圧の生値を格納
+        start_p += sizeof(uint16_t);
+        if(start_p >= end_p) {  // endにいくまで配列の値を読み続ける
+            break;
+        }
+        counter++;
+        counter %= BUFSIZE;
+        logs[counter] = sample;
+    }
+    diff10 = logs[counter] - logs[counter - 10];
+
+    // log start
 
     for(;;) {
         fd_csv = fopen(csvfname, "a+");  // とりあえずひたすら追記する設定
@@ -391,8 +414,10 @@ int main(int argc, FAR char *argv[]) {
             if(start >= end) {  // endにいくまで配列の値を読み続ける
                 break;
             }
-            if(diff > 500 || sample > -25000) {
-                // if(sample > -25000) {
+
+            if(diff10 > 450) {
+                // if(diff > 500 || sample > -25000) {
+                //  if(sample > -25000) {
                 kiroku = counter;
                 flag = true;
             }
@@ -414,7 +439,8 @@ int main(int argc, FAR char *argv[]) {
             counter++;
             counter %= BUFSIZE;
             logs[counter] = sample;
-            diff = logs[counter] - logs[counter - 1];
+            // diff = logs[counter] - logs[counter - 1];
+            diff10 = logs[counter] - logs[counter - 10];
 
             // printf("%d,%d,%d\n", sample, -20800, -28800);
         }
