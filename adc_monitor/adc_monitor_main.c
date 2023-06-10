@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/boardctl.h>   // boardctl用。
 #include <sys/ioctl.h>      // ioctl、電圧受取部の制御に必要。
+#include <time.h>
 #include <unistd.h>         // unix標準入出力。readとか。
 
 #ifdef CONFIG_CXD56_ADC     // CONFIG_CXD56_ADCが宣言されている場合にブロック内を実行
@@ -19,6 +20,12 @@
 #define MAX_PATH_LENGTH 128
 static char csvfname[MAX_PATH_LENGTH];
 static FILE *fd_csv;
+
+#define TIMEZONE_JST (60 * 60 * 9)
+long time_diff;
+struct timespec ts;
+struct tm tm_jst;
+time_t tv_sec_jst;  // ts.tv_secを日本時間に補正したものを格納
 
 char buf[BUFSIZE];
 int fd;
@@ -77,6 +84,13 @@ static void close_csv() {
     fclose(fd_csv);
 }
 
+static void write_time() {
+    clock_gettime(CLOCK_REALTIME, &ts);
+    tv_sec_jst = ts.tv_sec + TIMEZONE_JST;
+    localtime_r(&tv_sec_jst, &tm_jst);
+    fprintf(fd_csv, "%d,%d,%d,%d,%d,%d,%d", tm_jst.tm_year + 1900, tm_jst.tm_mon + 1, tm_jst.tm_mday, tm_jst.tm_hour, tm_jst.tm_min, tm_jst.tm_sec, ts.tv_nsec / 1000);
+}
+
 // loop
 void loop() {
     int counter = 0;
@@ -105,9 +119,9 @@ void loop() {
                 flag = true;
             }
             if(flag && (counter == (entrypoint + interval / 2) % BUFSIZE)) {
-                open_csv();                                                                   // csvをオープン
-                fprintf(fd_csv, "%d", logs[(0 + entrypoint - interval / 2) % BUFSIZE]);       // csvファイルに書き込み
-                for(int i = 1; i < interval; i++) {
+                open_csv();  // csvをオープン
+                write_time();
+                for(int i = 0; i < interval; i++) {
                     fprintf(fd_csv, ",%d", logs[(i + entrypoint - interval / 2) % BUFSIZE]);  // csvファイルに書き込み
                 }
                 fprintf(fd_csv, "\n");
