@@ -11,7 +11,7 @@ adc_monitor_main.c.Users.potagashi.Documents.MACS.spresense_workspace.cogamo_pro
  /Users/potagashi/Documents/MACS/spresense_workspace/spresense/nuttx/include/limits.h \
  /Users/potagashi/Documents/MACS/spresense_workspace/spresense/nuttx/include/arch/limits.h \
  /Users/potagashi/Documents/MACS/spresense_workspace/spresense/nuttx/include/stdio.h \
- /Users/potagashi/spresenseenv/usr/lib/gcc/arm-none-eabi/9.2.1/include/stdarg.h \
+ /Users/potagashi/spresenseenv/usr/lib/gcc/arm-none-eabi/10.3.1/include/stdarg.h \
  /Users/potagashi/Documents/MACS/spresense_workspace/spresense/nuttx/include/time.h \
  /Users/potagashi/Documents/MACS/spresense_workspace/spresense/nuttx/include/nuttx/fs/fs.h \
  /Users/potagashi/Documents/MACS/spresense_workspace/spresense/nuttx/include/stdbool.h \
